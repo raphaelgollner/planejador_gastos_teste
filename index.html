@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Planejador Financeiro</title>
     <style>
-        /* CSS com o mesmo estilo "modo escuro" */
         :root {
             --bg-color: #1a1a1a;
             --primary-color: #2c2c2c;
@@ -22,14 +21,13 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            /* Centraliza o formulário na tela */
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
         }
 
-        .login-container {
+        .form-container {
             width: 100%;
             max-width: 400px;
             background-color: var(--primary-color);
@@ -66,35 +64,66 @@
             font-size: 1em;
         }
 
-        #login-btn {
+        .btn {
             width: 100%;
             padding: 15px;
-            background-color: var(--accent-color);
-            color: var(--bg-color);
             border: none;
             border-radius: 5px;
             font-size: 1.1em;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, color 0.3s;
             margin-top: 10px;
         }
-
-        #login-btn:hover {
-            background-color: #0088cc;
+        
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
         }
 
-        #error-message {
+        .btn-primary:hover {
+            background-color: #0088cc;
+        }
+        
+        /* Novo botão secundário */
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+
+        .error-message {
             color: var(--danger-color);
             margin-top: 15px;
             font-weight: bold;
             display: none; /* Começa escondido */
+            font-size: 0.9em;
+        }
+        
+        .link-style {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9em;
+            margin-top: 15px;
         }
 
+        /* Container de registro começa escondido */
+        #registration-container {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div id="login-container" class="form-container">
         <h1>Acessar Planejador</h1>
         <form id="login-form">
             <div class="input-group">
@@ -105,43 +134,117 @@
                 <label for="password">Senha</label>
                 <input type="password" id="password" required>
             </div>
-            <button type="submit" id="login-btn">Entrar</button>
-            <p id="error-message">Usuário ou senha incorretos.</p>
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <p id="login-error-message" class="error-message">Usuário ou senha incorretos.</p>
         </form>
+        <button id="show-register-btn" class="btn btn-secondary">Criar Conta</button>
+    </div>
+
+    <div id="registration-container" class="form-container">
+        <h1>Criar Nova Conta</h1>
+        <form id="register-form">
+            <div class="input-group">
+                <label for="reg-name">Nome</label>
+                <input type="text" id="reg-name" required>
+            </div>
+            <div class="input-group">
+                <label for="reg-username">Usuário</label>
+                <input type="text" id="reg-username" required>
+            </div>
+            <div class="input-group">
+                <label for="reg-password">Senha</label>
+                <input type="password" id="reg-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+            <p id="register-error-message" class="error-message">Erro ao cadastrar.</p>
+        </form>
+        <button id="back-to-login-btn" class="link-style">Voltar para o Login</button>
     </div>
 
     <script>
-        // Seleciona os elementos do formulário
+        // --- SELEÇÃO DOS ELEMENTOS DO DOM ---
+        const loginContainer = document.getElementById('login-container');
+        const registrationContainer = document.getElementById('registration-container');
+
+        const showRegisterBtn = document.getElementById('show-register-btn');
+        const backToLoginBtn = document.getElementById('back-to-login-btn');
+
         const loginForm = document.getElementById('login-form');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const errorMessage = document.getElementById('error-message');
+        const registerForm = document.getElementById('register-form');
 
-        // Adiciona um "ouvinte" para o evento de envio do formulário
-        loginForm.addEventListener('submit', function(event) {
-            // Previne o comportamento padrão do formulário (que é recarregar a página)
+        // --- LÓGICA PARA ALTERNAR ENTRE AS TELAS ---
+        showRegisterBtn.addEventListener('click', () => {
+            loginContainer.style.display = 'none';
+            registrationContainer.style.display = 'block';
+        });
+
+        backToLoginBtn.addEventListener('click', () => {
+            registrationContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+        });
+
+        // --- LÓGICA DE REGISTRO DE NOVO USUÁRIO ---
+        registerForm.addEventListener('submit', (event) => {
             event.preventDefault();
+            const errorMessageEl = document.getElementById('register-error-message');
 
-            // --- DADOS DE LOGIN CORRETOS ---
-            const correctUser = 'admin';
-            const correctPass = '1234';
-            // --------------------------------
+            const name = document.getElementById('reg-name').value;
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
 
-            // Pega os valores digitados pelo usuário
-            const enteredUser = usernameInput.value;
-            const enteredPass = passwordInput.value;
+            // Validação da senha
+            const hasLetters = /[a-zA-Z]/.test(password);
+            const hasNumbers = /[0-9]/.test(password);
+            const isLongEnough = password.length >= 8;
 
-            // Verifica se o usuário e a senha estão corretos
-            if (enteredUser === correctUser && enteredPass === correctPass) {
-                // Se estiverem corretos, redireciona para a página do planejador
-                // O arquivo "planejador.html" DEVE estar na mesma pasta.
+            if (!hasLetters || !hasNumbers || !isLongEnough) {
+                errorMessageEl.textContent = "A senha deve ter no mínimo 8 caracteres, com letras e números.";
+                errorMessageEl.style.display = 'block';
+                return;
+            }
+
+            // Verifica se o usuário já existe (incluindo o 'admin')
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            if (users[username] || username === 'admin') {
+                errorMessageEl.textContent = "Este nome de usuário já existe.";
+                errorMessageEl.style.display = 'block';
+                return;
+            }
+
+            // Salva o novo usuário no localStorage
+            users[username] = password;
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // Sucesso
+            alert(`Usuário "${username}" criado com sucesso! Você já pode fazer o login.`);
+            registerForm.reset();
+            errorMessageEl.style.display = 'none';
+            backToLoginBtn.click(); // Volta para a tela de login
+        });
+
+        // --- LÓGICA DE LOGIN ATUALIZADA ---
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const errorMessageEl = document.getElementById('login-error-message');
+
+            const enteredUser = document.getElementById('username').value;
+            const enteredPass = document.getElementById('password').value;
+
+            // 1. Verifica o usuário 'admin' fixo no código
+            const isAdmin = (enteredUser === 'admin' && enteredPass === '1234');
+
+            // 2. Verifica os usuários salvos no localStorage
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            const isRegisteredUser = (users[enteredUser] && users[enteredUser] === enteredPass);
+
+            if (isAdmin || isRegisteredUser) {
+                // Se for 'admin' ou um usuário registrado, redireciona
                 window.location.href = 'planejador.html';
             } else {
-                // Se estiverem errados, mostra a mensagem de erro
-                errorMessage.style.display = 'block';
-                // Limpa o campo de senha
-                passwordInput.value = '';
-                passwordInput.focus();
+                // Caso contrário, mostra erro
+                errorMessageEl.style.display = 'block';
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
             }
         });
     </script>
