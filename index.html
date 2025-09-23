@@ -11,119 +11,33 @@
             --secondary-color: #444;
             --text-color: #e0e0e0;
             --accent-color: #00aaff;
+            --success-color: #4dff4d;
             --danger-color: #ff4d4d;
             --border-radius: 8px;
             --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .form-container {
-            width: 100%;
-            max-width: 400px;
-            background-color: var(--primary-color);
-            padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            text-align: center;
-        }
-
-        h1 {
-            color: var(--accent-color);
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            background-color: var(--secondary-color);
-            border: 1px solid var(--bg-color);
-            color: var(--text-color);
-            border-radius: 5px;
-            font-size: 1em;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            margin-top: 10px;
-        }
-        
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-        }
-
-        .btn-primary:hover {
-            background-color: #0088cc;
-        }
-        
-        /* Novo botão secundário */
-        .btn-secondary {
-            background-color: transparent;
-            color: var(--accent-color);
-            border: 2px solid var(--accent-color);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-        }
-
-        .error-message {
-            color: var(--danger-color);
-            margin-top: 15px;
-            font-weight: bold;
-            display: none; /* Começa escondido */
-            font-size: 0.9em;
-        }
-        
-        .link-style {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            text-decoration: underline;
-            cursor: pointer;
-            padding: 0;
-            font-size: 0.9em;
-            margin-top: 15px;
-        }
-
-        /* Container de registro começa escondido */
-        #registration-container {
-            display: none;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-container { width: 100%; max-width: 400px; background-color: var(--primary-color); padding: 40px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); text-align: center; }
+        h1 { color: var(--accent-color); margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 12px; box-sizing: border-box; background-color: var(--secondary-color); border: 1px solid var(--bg-color); color: var(--text-color); border-radius: 5px; font-size: 1em; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 5px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background-color 0.3s; margin-top: 10px; }
+        #login-btn { background-color: var(--accent-color); color: var(--bg-color); }
+        #login-btn:hover { background-color: #0088cc; }
+        #create-user-btn { background-color: transparent; color: var(--accent-color); border: 2px solid var(--accent-color); }
+        #create-user-btn:hover { background-color: var(--secondary-color); }
+        .error-message { color: var(--danger-color); margin-top: 15px; font-weight: bold; display: none; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--primary-color); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); width: 90%; max-width: 450px; position: relative; }
+        .modal-content h2 { color: var(--accent-color); margin-top: 0; }
+        .close-btn { position: absolute; top: 15px; right: 20px; color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover, .close-btn:focus { color: white; text-decoration: none; }
+        #cadastro-btn { background-color: var(--success-color); color: var(--bg-color); }
     </style>
 </head>
 <body>
-    <div id="login-container" class="form-container">
+    <div class="login-container">
         <h1>Acessar Planejador</h1>
         <form id="login-form">
             <div class="input-group">
@@ -134,117 +48,126 @@
                 <label for="password">Senha</label>
                 <input type="password" id="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Entrar</button>
+            <button type="submit" id="login-btn" class="btn">Entrar</button>
             <p id="login-error-message" class="error-message">Usuário ou senha incorretos.</p>
         </form>
-        <button id="show-register-btn" class="btn btn-secondary">Criar Conta</button>
+        <button id="create-user-btn" class="btn">Criar Usuário</button>
     </div>
 
-    <div id="registration-container" class="form-container">
-        <h1>Criar Nova Conta</h1>
-        <form id="register-form">
-            <div class="input-group">
-                <label for="reg-name">Nome</label>
-                <input type="text" id="reg-name" required>
-            </div>
-            <div class="input-group">
-                <label for="reg-username">Usuário</label>
-                <input type="text" id="reg-username" required>
-            </div>
-            <div class="input-group">
-                <label for="reg-password">Senha</label>
-                <input type="password" id="reg-password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Cadastrar</button>
-            <p id="register-error-message" class="error-message">Erro ao cadastrar.</p>
-        </form>
-        <button id="back-to-login-btn" class="link-style">Voltar para o Login</button>
+    <div id="modal-cadastro" class="modal">
+        <div class="modal-content">
+            <span id="close-modal-btn" class="close-btn">&times;</span>
+            <h2>Criar Novo Usuário</h2>
+            <form id="cadastro-form">
+                <div class="input-group">
+                    <label for="reg-nome">Nome</label>
+                    <input type="text" id="reg-nome" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-usuario">Usuário (para login)</label>
+                    <input type="text" id="reg-usuario" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-senha">Senha</label>
+                    <input type="password" id="reg-senha" required>
+                </div>
+                 <button type="submit" id="cadastro-btn" class="btn">Cadastrar</button>
+                 <p id="cadastro-error-message" class="error-message"></p>
+            </form>
+        </div>
     </div>
 
     <script>
-        // --- SELEÇÃO DOS ELEMENTOS DO DOM ---
-        const loginContainer = document.getElementById('login-container');
-        const registrationContainer = document.getElementById('registration-container');
-
-        const showRegisterBtn = document.getElementById('show-register-btn');
-        const backToLoginBtn = document.getElementById('back-to-login-btn');
-
         const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginErrorMessage = document.getElementById('login-error-message');
+        
+        const createUserBtn = document.getElementById('create-user-btn');
+        const modal = document.getElementById('modal-cadastro');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        
+        const cadastroForm = document.getElementById('cadastro-form');
+        const regNomeInput = document.getElementById('reg-nome');
+        const regUsuarioInput = document.getElementById('reg-usuario');
+        const regSenhaInput = document.getElementById('reg-senha');
+        const cadastroErrorMessage = document.getElementById('cadastro-error-message');
 
-        // --- LÓGICA PARA ALTERNAR ENTRE AS TELAS ---
-        showRegisterBtn.addEventListener('click', () => {
-            loginContainer.style.display = 'none';
-            registrationContainer.style.display = 'block';
+        // --- LÓGICA DO MODAL ---
+        createUserBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+        closeModalBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+        window.addEventListener('click', (event) => {
+            if (event.target == modal) { modal.style.display = 'none'; }
         });
 
-        backToLoginBtn.addEventListener('click', () => {
-            registrationContainer.style.display = 'none';
-            loginContainer.style.display = 'block';
-        });
-
-        // --- LÓGICA DE REGISTRO DE NOVO USUÁRIO ---
-        registerForm.addEventListener('submit', (event) => {
+        // --- LÓGICA DO FORMULÁRIO DE CADASTRO (MODIFICADO) ---
+        cadastroForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const errorMessageEl = document.getElementById('register-error-message');
+            cadastroErrorMessage.style.display = 'none';
+            
+            const name = regNomeInput.value;
+            const username = regUsuarioInput.value;
+            const password = regSenhaInput.value;
 
-            const name = document.getElementById('reg-name').value;
-            const username = document.getElementById('reg-username').value;
-            const password = document.getElementById('reg-password').value;
-
-            // Validação da senha
-            const hasLetters = /[a-zA-Z]/.test(password);
-            const hasNumbers = /[0-9]/.test(password);
-            const isLongEnough = password.length >= 8;
-
-            if (!hasLetters || !hasNumbers || !isLongEnough) {
-                errorMessageEl.textContent = "A senha deve ter no mínimo 8 caracteres, com letras e números.";
-                errorMessageEl.style.display = 'block';
-                return;
+            // Validação da senha no frontend para feedback rápido
+            if (password.length < 8 || !/\d/.test(password) || !/[a-zA-Z]/.test(password)) {
+                 cadastroErrorMessage.textContent = 'Senha inválida. Use no mínimo 8 caracteres, com letras e números.';
+                 cadastroErrorMessage.style.display = 'block';
+                 return;
             }
 
-            // Verifica se o usuário já existe (incluindo o 'admin')
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            if (users[username] || username === 'admin') {
-                errorMessageEl.textContent = "Este nome de usuário já existe.";
-                errorMessageEl.style.display = 'block';
-                return;
+            try {
+                // Envia os dados para a nossa Netlify Function "createUser"
+                const response = await fetch('/.netlify/functions/createUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, password }),
+                });
+
+                if (response.ok) {
+                    alert('Usuário criado com sucesso! Agora você pode fazer o login.');
+                    cadastroForm.reset();
+                    modal.style.display = 'none';
+                } else {
+                    // Se a resposta não for OK, pega a mensagem de erro do backend
+                    const errorText = await response.text();
+                    cadastroErrorMessage.textContent = errorText;
+                    cadastroErrorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                cadastroErrorMessage.textContent = 'Erro de conexão. Tente novamente.';
+                cadastroErrorMessage.style.display = 'block';
             }
-
-            // Salva o novo usuário no localStorage
-            users[username] = password;
-            localStorage.setItem('users', JSON.stringify(users));
-
-            // Sucesso
-            alert(`Usuário "${username}" criado com sucesso! Você já pode fazer o login.`);
-            registerForm.reset();
-            errorMessageEl.style.display = 'none';
-            backToLoginBtn.click(); // Volta para a tela de login
         });
 
-        // --- LÓGICA DE LOGIN ATUALIZADA ---
-        loginForm.addEventListener('submit', function(event) {
+        // --- LÓGICA DE LOGIN (MODIFICADO) ---
+        loginForm.addEventListener('submit', async function(event) {
             event.preventDefault();
-            const errorMessageEl = document.getElementById('login-error-message');
+            loginErrorMessage.style.display = 'none';
 
-            const enteredUser = document.getElementById('username').value;
-            const enteredPass = document.getElementById('password').value;
+            const username = usernameInput.value;
+            const password = passwordInput.value;
 
-            // 1. Verifica o usuário 'admin' fixo no código
-            const isAdmin = (enteredUser === 'admin' && enteredPass === '1234');
+            try {
+                // Envia os dados para a nossa Netlify Function "loginUser"
+                const response = await fetch('/.netlify/functions/loginUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                });
 
-            // 2. Verifica os usuários salvos no localStorage
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            const isRegisteredUser = (users[enteredUser] && users[enteredUser] === enteredPass);
-
-            if (isAdmin || isRegisteredUser) {
-                // Se for 'admin' ou um usuário registrado, redireciona
-                window.location.href = 'planejador.html';
-            } else {
-                // Caso contrário, mostra erro
-                errorMessageEl.style.display = 'block';
-                document.getElementById('password').value = '';
-                document.getElementById('password').focus();
+                if (response.ok) {
+                    // Se o login for bem-sucedido (status 200), redireciona
+                    window.location.href = 'planejador.html';
+                } else {
+                    // Se não, mostra a mensagem de erro
+                    loginErrorMessage.style.display = 'block';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            } catch (error) {
+                loginErrorMessage.textContent = 'Erro de conexão. Tente novamente.';
+                loginErrorMessage.style.display = 'block';
             }
         });
     </script>
