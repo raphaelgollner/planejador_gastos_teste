@@ -24,11 +24,32 @@
         
         /* --- Estilos das Abas --- */
         .tab-bar { display: flex; border-bottom: 2px solid var(--secondary-color); margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .tab { padding: 12px 18px; cursor: pointer; background-color: transparent; border: none; color: var(--text-color); font-size: 1em; border-bottom: 3px solid transparent; }
+        .tab { display: flex; align-items: center; gap: 8px; padding: 12px 18px; cursor: pointer; background-color: transparent; border: none; color: var(--text-color); font-size: 1em; border-bottom: 3px solid transparent; }
         .tab.active { color: var(--accent-color); border-bottom: 3px solid var(--accent-color); font-weight: bold; }
         .tab:hover { background-color: var(--secondary-color); }
         #add-tab-btn { background-color: var(--accent-color); color: var(--bg-color); border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 20px; font-weight: bold; cursor: pointer; margin-left: 10px; flex-shrink: 0; }
         
+        /* --- Estilos para o botão de deletar aba --- */
+        .delete-tab-btn {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            line-height: 20px;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s, background-color 0.3s;
+        }
+        .delete-tab-btn:hover {
+            background-color: var(--danger-color);
+            color: white;
+            opacity: 1;
+        }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -171,12 +192,10 @@ function initialize() {
     if (Object.keys(appData).length === 0) {
         const today = new Date();
         const currentMonthId = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-        addMonth(currentMonthId, false); // Não navega, apenas adiciona
+        addMonth(currentMonthId, false);
     }
-    // Sempre inicia na aba de resumo
     switchTab('summary');
     
-    // Listeners de eventos principais
     logoutBtn.addEventListener('click', () => {
         alert("Você está sendo desconectado.");
         window.location.href = 'index.html';
@@ -184,7 +203,6 @@ function initialize() {
     saveBtn.addEventListener('click', saveDataToFile);
     fileInput.addEventListener('change', loadDataFromFile);
     
-    // Listeners do Modal
     addMonthModal.querySelector('.close-btn').onclick = () => addMonthModal.style.display = 'none';
     addMonthForm.addEventListener('submit', handleAddMonthConfirm);
     window.addEventListener('click', (event) => {
@@ -195,8 +213,7 @@ function initialize() {
 // --- GERENCIAMENTO DE ABAS E RENDERIZAÇÃO ---
 function renderTabs() {
     tabBar.innerHTML = '';
-    const summaryTab = createTab('summary', 'Resumo Anual');
-    tabBar.appendChild(summaryTab);
+    tabBar.appendChild(createTab('summary', 'Resumo Anual'));
     
     const monthIds = Object.keys(appData).sort();
     monthIds.forEach(monthId => {
@@ -220,8 +237,25 @@ function createTab(id, name) {
     const tab = document.createElement('button');
     tab.className = 'tab';
     tab.dataset.tabId = id;
-    tab.textContent = name;
     tab.onclick = () => switchTab(id);
+    
+    const tabNameSpan = document.createElement('span');
+    tabNameSpan.textContent = name;
+    tab.appendChild(tabNameSpan);
+
+    // Adiciona o botão de deletar apenas para abas de meses
+    if (id !== 'summary') {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-tab-btn';
+        deleteBtn.textContent = '×'; // Símbolo de 'X'
+        deleteBtn.title = `Remover ${name}`;
+        deleteBtn.onclick = (event) => {
+            event.stopPropagation(); // Impede que o clique no 'X' também ative a aba
+            handleDeleteMonth(id, name);
+        };
+        tab.appendChild(deleteBtn);
+    }
+
     return tab;
 }
 
@@ -240,59 +274,12 @@ function switchTab(tabId) {
     }
 }
 
-function renderMonthView(monthId) {
-    const content = monthTabTemplate.content.cloneNode(true);
-    tabContentContainer.appendChild(content);
-
-    const monthData = appData[monthId];
-    const view = tabContentContainer;
-    const incomeTbody = view.querySelector('.income-table tbody');
-    const expenseTbody = view.querySelector('.expense-table tbody');
-    
-    (monthData.incomes || []).forEach(item => addRowToTable(incomeTbody, item.description, item.value));
-    (monthData.expenses || []).forEach(item => addRowToTable(expenseTbody, item.description, item.value));
-    
-    view.querySelector('.add-income-btn').onclick = () => addRowToTable(incomeTbody);
-    view.querySelector('.add-expense-btn').onclick = () => addRowToTable(expenseTbody);
-    
-    monthData.incomeChart = createDoughnutChart(view.querySelector('.income-chart'));
-    monthData.expenseChart = createDoughnutChart(view.querySelector('.expense-chart'));
-    
-    updateMonthView(monthId);
-}
-
-function renderSummaryView() {
-    const summaryContainer = document.createElement('div');
-    summaryContainer.id = 'annual-summary-chart-container';
-    summaryContainer.innerHTML = `<h2>Evolução Financeira Anual</h2><canvas id="annual-line-chart"></canvas>`;
-    tabContentContainer.appendChild(summaryContainer);
-
-    const labels = [];
-    const incomeData = [];
-    const expenseData = [];
-    
-    const monthIds = Object.keys(appData).sort();
-    monthIds.forEach(monthId => {
-        const [year, month] = monthId.split('-');
-        labels.push(`${monthNames[parseInt(month)-1].substring(0,3)}/${year.substring(2,4)}`);
-        const monthTotals = calculateMonthTotals(appData[monthId]);
-        incomeData.push(monthTotals.totalIncome);
-        expenseData.push(monthTotals.totalExpenses);
-    });
-
-    createLineChart(document.getElementById('annual-line-chart'), labels, incomeData, expenseData);
-}
-
-// --- LÓGICA DE ADICIONAR MÊS (COM MODAL) ---
+// --- LÓGICA DE ADICIONAR E REMOVER MÊS ---
 function handleAddMonthClick() {
-    // Preenche o select de meses
     monthSelect.innerHTML = monthNames.map((name, index) => `<option value="${index + 1}">${name}</option>`).join('');
-    
-    // Sugere o mês e ano atuais
     const today = new Date();
     monthSelect.value = today.getMonth() + 1;
     yearInput.value = today.getFullYear();
-    
     addMonthModal.style.display = 'flex';
 }
 
@@ -318,13 +305,55 @@ function addMonth(monthId, navigate = true) {
     appData[monthId] = { incomes: [], expenses: [] };
     saveAppData();
     renderTabs();
-    if (navigate) {
-        switchTab(monthId);
+    if (navigate) switchTab(monthId);
+}
+
+function handleDeleteMonth(monthId, name) {
+    if (confirm(`Tem certeza que deseja remover o mês "${name}"?\n\nTodos os dados financeiros deste mês serão perdidos permanentemente.`)) {
+        delete appData[monthId];
+        saveAppData();
+        renderTabs();
+        switchTab('summary'); // Volta para o resumo após deletar
     }
 }
 
 
-// --- LÓGICA DE MANIPULAÇÃO DE DADOS E UI DO MÊS ---
+// --- RENDERIZAÇÃO E ATUALIZAÇÃO DAS VIEWS ---
+function renderMonthView(monthId) {
+    const content = monthTabTemplate.content.cloneNode(true);
+    tabContentContainer.appendChild(content);
+    const monthData = appData[monthId];
+    const view = tabContentContainer;
+    const incomeTbody = view.querySelector('.income-table tbody');
+    const expenseTbody = view.querySelector('.expense-table tbody');
+    (monthData.incomes || []).forEach(item => addRowToTable(incomeTbody, item.description, item.value));
+    (monthData.expenses || []).forEach(item => addRowToTable(expenseTbody, item.description, item.value));
+    view.querySelector('.add-income-btn').onclick = () => addRowToTable(incomeTbody);
+    view.querySelector('.add-expense-btn').onclick = () => addRowToTable(expenseTbody);
+    monthData.incomeChart = createDoughnutChart(view.querySelector('.income-chart'));
+    monthData.expenseChart = createDoughnutChart(view.querySelector('.expense-chart'));
+    updateMonthView(monthId);
+}
+
+function renderSummaryView() {
+    const summaryContainer = document.createElement('div');
+    summaryContainer.id = 'annual-summary-chart-container';
+    summaryContainer.innerHTML = `<h2>Evolução Financeira Anual</h2><canvas id="annual-line-chart"></canvas>`;
+    tabContentContainer.appendChild(summaryContainer);
+    const labels = [];
+    const incomeData = [];
+    const expenseData = [];
+    const monthIds = Object.keys(appData).sort();
+    monthIds.forEach(monthId => {
+        const [year, month] = monthId.split('-');
+        labels.push(`${monthNames[parseInt(month)-1].substring(0,3)}/${year.substring(2,4)}`);
+        const monthTotals = calculateMonthTotals(appData[monthId]);
+        incomeData.push(monthTotals.totalIncome);
+        expenseData.push(monthTotals.totalExpenses);
+    });
+    createLineChart(document.getElementById('annual-line-chart'), labels, incomeData, expenseData);
+}
+
 function addRowToTable(tbody, description = '', value = '') {
     const row = tbody.insertRow();
     row.innerHTML = `
@@ -342,33 +371,27 @@ function addRowToTable(tbody, description = '', value = '') {
 
 function updateMonthView(monthId) {
     if (!monthId || monthId === 'summary') return;
-    
     const view = tabContentContainer;
     const monthData = appData[monthId];
-    
     const incomeItems = Array.from(view.querySelectorAll('.income-table tbody tr')).map(rowToItem);
     const expenseItems = Array.from(view.querySelectorAll('.expense-table tbody tr')).map(rowToItem);
     const { totalIncome, totalExpenses } = calculateMonthTotals({ incomes: incomeItems, expenses: expenseItems });
     const finalBalance = totalIncome - totalExpenses;
-    
     view.querySelector('.total-income').textContent = formatCurrency(totalIncome);
     view.querySelector('.total-expenses').textContent = formatCurrency(totalExpenses);
     const balanceEl = view.querySelector('.final-balance');
     balanceEl.textContent = formatCurrency(finalBalance);
     balanceEl.style.color = finalBalance < 0 ? 'var(--danger-color)' : 'var(--success-color)';
-
     if (monthData.incomeChart && monthData.expenseChart) {
         updateDoughnutChart(monthData.incomeChart, incomeItems);
         updateDoughnutChart(monthData.expenseChart, expenseItems);
     }
-    
     saveCurrentTabData();
 }
 
-// --- LÓGICA DE SALVAR/CARREGAR DADOS (CORRIGIDA) ---
+// --- LÓGICA DE SALVAR/CARREGAR DADOS ---
 function saveCurrentTabData() {
     if (!activeTabId || activeTabId === 'summary') return;
-
     const view = tabContentContainer;
     appData[activeTabId] = {
         incomes: Array.from(view.querySelectorAll('.income-table tbody tr')).map(rowToItem),
@@ -384,16 +407,12 @@ function saveDataToFile() {
     const replacer = (key, value) => (key === 'incomeChart' || key === 'expenseChart') ? undefined : value;
     const dataString = JSON.stringify(appData, replacer, 2);
     const blob = new Blob([dataString], { type: 'text/plain;charset=utf-8' });
-    
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `planejador-financeiro-${new Date().toISOString().slice(0, 10)}.txt`;
-    
-    // CORRIGIDO: Força o download adicionando o link ao DOM antes de clicar
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
     alert('Dados salvos com sucesso!');
 }
 
@@ -407,7 +426,7 @@ function loadDataFromFile(event) {
             if (typeof loadedData !== 'object' || loadedData === null) throw new Error("Arquivo inválido");
             appData = loadedData;
             saveAppData();
-            initialize(); // Re-inicializa a aplicação com os novos dados
+            initialize();
             alert('Dados carregados com sucesso!');
         } catch (error) {
             alert('Erro ao carregar o arquivo. Verifique se o formato está correto.');
@@ -442,7 +461,6 @@ function calculateMonthTotals(monthData) {
     const totalExpenses = (monthData.expenses || []).reduce((sum, item) => sum + item.value, 0);
     return { totalIncome, totalExpenses };
 }
-
 function createDoughnutChart(canvas) {
     return new Chart(canvas.getContext('2d'), {
         type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#00aaff', '#ff4d4d', '#4dff4d', '#ffc107', '#6f42c1', '#fd7e14', '#20c997'], hoverOffset: 4 }] },
